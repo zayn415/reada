@@ -1,0 +1,10 @@
+spring:
+  application:
+    name: reada
+
+server:
+  port: 8080
+
+mybatis-plus:
+  configuration:
+    cache-enabled: true
