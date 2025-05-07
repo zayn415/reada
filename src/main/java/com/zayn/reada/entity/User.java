@@ -1,6 +1,7 @@
 package com.zayn.reada.entity;
 
 import com.baomidou.mybatisplus.annotation.TableField;
+import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 
@@ -13,18 +14,18 @@ import java.util.Date;
  * @since 2025-05-05 20:40:55
  */
 @Data
-@TableName("User")
+@TableName("user")
 public class User {
     /**
      * 用户ID
      */
-    @TableField("userId")
+    @TableId("user_id")
     private Long userId;
     
     /**
      * 更新时间
      */
-    @TableField("updatedAt")
+    @TableField("updated_at")
     private Date updatedAt;
     
     /**

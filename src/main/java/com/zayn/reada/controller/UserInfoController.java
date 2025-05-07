@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
  * @since 2025-05-05 20:44:21
  */
 @RestController
-@RequestMapping("userInfo")
+@RequestMapping("/userInfo")
 @RequiredArgsConstructor
 public class UserInfoController {
     

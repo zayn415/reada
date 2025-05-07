@@ -1,6 +1,7 @@
 package com.zayn.reada.entity;
 
 import com.baomidou.mybatisplus.annotation.TableField;
+import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 
@@ -13,30 +14,30 @@ import java.util.Date;
  * @since 2025-05-05 20:48:25
  */
 @Data
-@TableName("UserIdentity")
+@TableName("user_identity")
 public class UserIdentity {
     /**
      * 身份ID
      */
-    @TableField("identityId")
+    @TableId("identity_id")
     private Long identityId;
     
     /**
      * 用户ID
      */
-    @TableField("userId")
+    @TableField("user_id")
     private Long userId;
     
     /**
      * 身份类型，如手机号、邮箱、用户名等
      */
-    @TableField("identityType")
+    @TableField("identity_type")
     private String identityType;
     
     /**
      * 身份值，如手机号、邮箱、用户名等
      */
-    @TableField("identityValue")
+    @TableField("identity_value")
     private String identityValue;
     
     /**
@@ -54,13 +55,13 @@ public class UserIdentity {
     /**
      * 创建时间
      */
-    @TableField("createdAt")
+    @TableField("created_at")
     private Date createdAt;
     
     /**
      * 更新时间
      */
-    @TableField("updatedAt")
+    @TableField("updated_at")
     private Date updatedAt;
     
 }

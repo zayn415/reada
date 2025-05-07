@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
  * @since 2025-05-05 20:49:25
  */
 @RestController
-@RequestMapping("permission")
+@RequestMapping("/permission")
 @RequiredArgsConstructor
 public class PermissionController {
     

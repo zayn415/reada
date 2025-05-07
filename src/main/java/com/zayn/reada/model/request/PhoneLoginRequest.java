@@ -14,9 +14,10 @@ import lombok.Data;
 public class PhoneLoginRequest {
     
     @NotBlank
-    @Pattern(regexp = "^1[3-9]\\d{9}$", message = "手机号格式不正确")
+    @Pattern(regexp = "^1[3-9]\\d{9}$", message = "手机号格式错误")
     private String phone;
     
     @NotBlank
-    private String password;
+    @Pattern(regexp = "^\\d{6}$", message = "验证码格式错误")
+    private String code;
 }

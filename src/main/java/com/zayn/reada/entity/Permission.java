@@ -2,6 +2,7 @@ package com.zayn.reada.entity;
 
 
 import com.baomidou.mybatisplus.annotation.TableField;
+import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 
@@ -12,18 +13,18 @@ import lombok.Data;
  * @since 2025-05-05 20:49:25
  */
 @Data
-@TableName("Permission")
+@TableName("permission")
 public class Permission {
     /**
      * 权限ID
      */
-    @TableField("permId")
+    @TableId("perm_id")
     private Long permId;
     
     /**
      * 权限代码
      */
-    @TableField("permCode")
+    @TableField("perm_code")
     private String permCode;
     
     /**

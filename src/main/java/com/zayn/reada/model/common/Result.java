@@ -1,6 +1,5 @@
-package com.zayn.reada.common;
+package com.zayn.reada.model.common;
 
-import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -11,12 +10,17 @@ import lombok.NoArgsConstructor;
  * @since 2025/5/5
  */
 @Data
-@AllArgsConstructor
 @NoArgsConstructor
 public class Result {
     private Integer code;
     private String message;
     private Object data;
+    
+    public Result(Integer code, String message, Object data) {
+        this.code = code;
+        this.message = message;
+        this.data = data;
+    }
     
     public static Result success() {
         return new Result(200, "成功", null);
