@@ -1,18 +1,18 @@
 package com.zayn.reada.service.impl;
 
 import cn.dev33.satoken.stp.StpUtil;
+import cn.hutool.core.bean.BeanUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.zayn.reada.entity.User;
-import com.zayn.reada.entity.UserIdentity;
 import com.zayn.reada.entity.UserInfo;
-import com.zayn.reada.mapper.UserIdentityMapper;
 import com.zayn.reada.mapper.UserInfoMapper;
 import com.zayn.reada.mapper.UserMapper;
 import com.zayn.reada.model.common.RedisPrefix;
 import com.zayn.reada.model.common.Result;
 import com.zayn.reada.model.request.LoginCodeRequest;
 import com.zayn.reada.model.request.PhoneLoginRequest;
+import com.zayn.reada.model.response.LoginUserResponse;
 import com.zayn.reada.service.UserService;
 import com.zayn.reada.utils.GenerateUtil;
 import lombok.RequiredArgsConstructor;
@@ -35,7 +35,6 @@ import java.util.concurrent.TimeUnit;
 public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements UserService {
     
     private final StringRedisTemplate stringRedisTemplate;
-    private final UserIdentityMapper userIdentityMapper;
     private final UserInfoMapper userInfoMapper;
     
     /**
@@ -67,34 +66,29 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         }
         
         // 查询用户
-        UserIdentity userIdentity
-                = userIdentityMapper.selectOne(new LambdaQueryWrapper<UserIdentity>().eq(UserIdentity::getIdentityType, "phone")
-                                                                                     .eq(UserIdentity::getIdentityValue, req.getPhone()));
+        User user = this.getOne(new LambdaQueryWrapper<User>().eq(User::getPhone, req.getPhone()));
+        UserInfo userInfo;
         // 不存在，则注册
-        if (userIdentity == null) {
-            try {
-                User user = new User();
-                this.save(user);
-                // 保存用户身份
-                userIdentity = new UserIdentity();
-                userIdentity.setUserId(user.getUserId());
-                userIdentity.setIdentityType("phone");
-                userIdentity.setIdentityValue(req.getPhone());
-                userIdentityMapper.insert(userIdentity);
-                
-                // 保存用户信息
-                UserInfo userInfo = new UserInfo();
-                userInfo.setUserId(user.getUserId());
-                userInfo.setNickname("用户" + GenerateUtil.generateUsername());
-                userInfoMapper.insert(userInfo);
-            } catch (Exception e) {
-                log.error("注册失败", e);
-                return Result.error("注册失败");
-            }
+        if (user == null) {
+            user = new User();
+            user.setPhone(req.getPhone());
+            this.save(user);
+            
+            // 用户信息
+            userInfo = new UserInfo();
+            userInfo.setUserId(user.getUserId());
+            userInfo.setNickname(GenerateUtil.generateUsername());
+            userInfoMapper.insert(userInfo);
+        } else {
+            userInfo
+                    = userInfoMapper.selectOne(new LambdaQueryWrapper<UserInfo>().eq(UserInfo::getUserId, user.getUserId()));
         }
         // 登录
         StpUtil.login(req.getPhone());
-        String token = StpUtil.getTokenValue();
-        return Result.success("登录成功");
+        LoginUserResponse loginUserResponse = new LoginUserResponse();
+        BeanUtil.copyProperties(user, loginUserResponse);
+        BeanUtil.copyProperties(userInfo, loginUserResponse);
+        
+        return Result.success(loginUserResponse);
     }
 }

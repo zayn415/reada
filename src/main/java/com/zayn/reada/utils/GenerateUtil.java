@@ -28,6 +28,6 @@ public class GenerateUtil {
         for (int i = 0; i < 10; i++) {
             sb.append(chars.charAt((int) (Math.random() * chars.length())));
         }
-        return sb.toString();
+        return "用户" + sb;
     }
 }

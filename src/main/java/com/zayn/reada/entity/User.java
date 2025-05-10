@@ -11,7 +11,7 @@ import java.util.Date;
  * 用户(User)实体类
  *
  * @author zayn
- * @since 2025-05-05 20:40:55
+ * @since 2025-05-08 23:13:11
  */
 @Data
 @TableName("user")
@@ -23,16 +23,40 @@ public class User {
     private Long userId;
     
     /**
-     * 更新时间
+     * 手机号
      */
-    @TableField("updated_at")
-    private Date updatedAt;
+    @TableField("phone")
+    private String phone;
+    
+    /**
+     * 微信openid
+     */
+    @TableField("wechat_openid")
+    private String wechatOpenid;
+    
+    /**
+     * 微信unionid
+     */
+    @TableField("wechat_unionid")
+    private String wechatUnionid;
     
     /**
      * 用户状态，1:正常，2:禁用，3:删除
      */
     @TableField("status")
     private Integer status;
+    
+    /**
+     * 创建时间
+     */
+    @TableField("created_at")
+    private Date createdAt;
+    
+    /**
+     * 更新时间
+     */
+    @TableField("updated_at")
+    private Date updatedAt;
     
 }
 
