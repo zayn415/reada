@@ -2,7 +2,7 @@ package com.zayn.reada.controller;
 
 import com.zayn.reada.model.common.Result;
 import com.zayn.reada.model.request.LoginCodeRequest;
-import com.zayn.reada.model.request.PhoneLoginRequest;
+import com.zayn.reada.model.request.LoginRequest;
 import com.zayn.reada.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -28,7 +28,7 @@ public class UserController {
      * 获取验证码
      */
     @PostMapping("/login/code")
-    public Result getLoginCode(@Valid @RequestBody LoginCodeRequest req) {
+    public Result getPhoneLoginCode(@Valid @RequestBody LoginCodeRequest req) {
         return userService.getLoginCode(req);
     }
     
@@ -36,8 +36,8 @@ public class UserController {
      * 手机号登录；未注册则先注册
      */
     @PostMapping("/login/phone")
-    public Result phoneLogin(@Valid @RequestBody PhoneLoginRequest req) {
-        return userService.phoneLogin(req);
+    public Result phoneLogin(@Valid @RequestBody LoginRequest req) {
+        return userService.login(req);
     }
 }
 

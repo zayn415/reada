@@ -4,7 +4,7 @@ import com.baomidou.mybatisplus.extension.service.IService;
 import com.zayn.reada.entity.User;
 import com.zayn.reada.model.common.Result;
 import com.zayn.reada.model.request.LoginCodeRequest;
-import com.zayn.reada.model.request.PhoneLoginRequest;
+import com.zayn.reada.model.request.LoginRequest;
 import jakarta.validation.Valid;
 
 /**
@@ -15,7 +15,7 @@ import jakarta.validation.Valid;
  */
 public interface UserService extends IService<User> {
     
-    Result phoneLogin(@Valid PhoneLoginRequest req);
+    Result login(@Valid LoginRequest req);
     
     Result getLoginCode(@Valid LoginCodeRequest req);
 }

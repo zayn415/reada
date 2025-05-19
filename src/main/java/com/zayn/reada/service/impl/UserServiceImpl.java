@@ -1,19 +1,22 @@
 package com.zayn.reada.service.impl;
 
 import cn.dev33.satoken.stp.StpUtil;
-import cn.hutool.core.bean.BeanUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.zayn.reada.entity.User;
+import com.zayn.reada.entity.UserIdentity;
 import com.zayn.reada.entity.UserInfo;
+import com.zayn.reada.mapper.UserIdentityMapper;
 import com.zayn.reada.mapper.UserInfoMapper;
 import com.zayn.reada.mapper.UserMapper;
+import com.zayn.reada.model.common.LoginType;
 import com.zayn.reada.model.common.RedisPrefix;
 import com.zayn.reada.model.common.Result;
 import com.zayn.reada.model.request.LoginCodeRequest;
-import com.zayn.reada.model.request.PhoneLoginRequest;
+import com.zayn.reada.model.request.LoginRequest;
 import com.zayn.reada.model.response.LoginUserResponse;
 import com.zayn.reada.service.UserService;
+import com.zayn.reada.utils.EmailUtil;
 import com.zayn.reada.utils.GenerateUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -36,6 +39,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     
     private final StringRedisTemplate stringRedisTemplate;
     private final UserInfoMapper userInfoMapper;
+    private final UserIdentityMapper userIdentityMapper;
+    private final EmailUtil emailUtil;
     
     /**
      * 获取登录验证码
@@ -44,12 +49,23 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     public Result getLoginCode(LoginCodeRequest req) {
         // 生成验证码
         String code = GenerateUtil.generatePhoneCode();
-        // 保存到Redis
+        if (req.getLoginType().equals(LoginType.PHONE.getType())) {
+            // todo 发送手机验证码
+            
+            log.info("手机号：{}，验证码：{}", req.getAccount(), code);
+        } else if (req.getLoginType().equals(LoginType.EMAIL.getType())) {
+            // todo 发送邮箱验证码
+            log.info("邮箱：{}，验证码：{}", req.getAccount(), code);
+            Boolean b = emailUtil.sendEmailCode(req.getAccount(), code);
+            if (b) {
+                return Result.success("发送成功");
+            } else {
+                return Result.error("发送失败，请稍后重试");
+            }
+        }
         stringRedisTemplate.opsForValue()
-                           .set(RedisPrefix.LOGIN_CODE.getPrefix() + req.getPhone(), code, 5, TimeUnit.MINUTES);
-        // todo 发送
+                           .set(RedisPrefix.LOGIN_CODE.getPrefix() + req.getAccount(), code, 5, TimeUnit.MINUTES);
         
-        log.info("手机号：{}，验证码：{}", req.getPhone(), code);
         return Result.success("发送成功");
     }
     
@@ -58,21 +74,31 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public Result phoneLogin(PhoneLoginRequest req) {
+    public Result login(LoginRequest req) {
         // 校验验证码
-        String code = stringRedisTemplate.opsForValue().get(RedisPrefix.LOGIN_CODE.getPrefix() + req.getPhone());
+        String code = stringRedisTemplate.opsForValue().get(RedisPrefix.LOGIN_CODE.getPrefix() + req.getAccount());
         if (code == null || !code.equals(req.getCode())) {
             return Result.error("验证码错误");
         }
         
         // 查询用户
-        User user = this.getOne(new LambdaQueryWrapper<User>().eq(User::getPhone, req.getPhone()));
+        String loginType = req.getLoginType();
+        UserIdentity userIdentity
+                = userIdentityMapper.selectOne(new LambdaQueryWrapper<UserIdentity>().eq(UserIdentity::getIdentityType, loginType)
+                                                                                     .eq(UserIdentity::getIdentityValue, req.getAccount()));
+        User user;
         UserInfo userInfo;
         // 不存在，则注册
-        if (user == null) {
+        if (userIdentity == null) {
             user = new User();
-            user.setPhone(req.getPhone());
             this.save(user);
+            
+            // 用户身份
+            userIdentity = new UserIdentity();
+            userIdentity.setUserId(user.getUserId());
+            userIdentity.setIdentityType(loginType);
+            userIdentity.setIdentityValue(req.getAccount());
+            userIdentityMapper.insert(userIdentity);
             
             // 用户信息
             userInfo = new UserInfo();
@@ -80,14 +106,15 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
             userInfo.setNickname(GenerateUtil.generateUsername());
             userInfoMapper.insert(userInfo);
         } else {
+            user = this.getById(userIdentity.getUserId());
             userInfo
                     = userInfoMapper.selectOne(new LambdaQueryWrapper<UserInfo>().eq(UserInfo::getUserId, user.getUserId()));
         }
         // 登录
-        StpUtil.login(req.getPhone());
+        StpUtil.login(user.getUserId());
         LoginUserResponse loginUserResponse = new LoginUserResponse();
-        BeanUtil.copyProperties(user, loginUserResponse);
-        BeanUtil.copyProperties(userInfo, loginUserResponse);
+        loginUserResponse.setUserId(user.getUserId());
+        // todo 用户信息
         
         return Result.success(loginUserResponse);
     }
